@@ -52,6 +52,8 @@ The central data repository. Must be:
 - Blockchain
 - Immutable file system
 
+These examples are illustrative, not prescriptive.
+
 ### 2.2 Record Operator
 
 The component that creates records. Responsibilities:
@@ -101,7 +103,7 @@ An independent, public medium for integrity proof. Requirements:
 
 - External to the system
 - Publicly accessible
-- Immutable or verifiable
+- Immutable or independently verifiable
 - Time-stamped
 
 **Examples:**
@@ -112,10 +114,15 @@ An independent, public medium for integrity proof. Requirements:
 
 ### 2.6 Public API
 
-Interface for verification queries. Must expose:
+Interface for verification queries. At minimum, implementations MUST support:
 
 ```
 isPaymentAuthorized(decision_id, payment) -> boolean
+```
+
+Implementations MAY also expose for interoperability and audit:
+
+```
 getDecisionRecord(decision_id) -> DR | null
 verifyChainIntegrity(from, to) -> boolean
 ```
@@ -133,7 +140,9 @@ The protocol **mandates** separation. No single entity controls everything.
 | Technical Auditor | Verify integrity | Modify anything |
 | Payment Executor | Execute authorized payments | Create records, modify anchor |
 
-### 3.1 Minimum Viable Separation
+### 3.1 Minimum Viable Separation (illustrative)
+
+This is a non-normative example of minimal separation.
 
 At minimum, two independent parties:
 
@@ -256,9 +265,12 @@ For high-value implementations:
 
 ### 6.2 Cryptographic Requirements
 
-- Hash function: SHA-256 minimum (or equivalent security)
-- Signatures: Ed25519 or RSA-2048 minimum
-- All cryptographic choices must be public
+Examples of acceptable cryptographic primitives include:
+
+- Hash function: SHA-256 (or equivalent security)
+- Signatures: Ed25519 or RSA-2048
+
+Equivalent or stronger primitives MAY be used. All cryptographic choices must be public.
 
 ### 6.3 Access Control
 
