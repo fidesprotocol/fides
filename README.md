@@ -56,7 +56,12 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 
 ## Specification
 
-- [Fides Protocol v0.1](spec/FIDES-v0.1.md) — The core specification
+- [Fides Protocol v0.1](spec/FIDES-v0.1.md) — The core specification (frozen)
+
+**Canonical hash (SHA-256):**
+```
+fad49b01b8f263e179987dc6781bf83cf0efcbce9b20e6beaf8f182a3bffc544
+```
 
 ## Reference Implementation
 
