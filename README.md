@@ -63,11 +63,23 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 fad49b01b8f263e179987dc6781bf83cf0efcbce9b20e6beaf8f182a3bffc544
 ```
 
-## Reference Implementation
+## Reference Materials
 
 - [Architecture](reference/architecture.md)
 - [Data Model](reference/data-model.md)
 - [Algorithms](reference/algorithms.md)
+
+## Executable Proof
+
+- [fides-run](https://github.com/fidesprotocol/fides-run) — Minimal working implementation
+
+```bash
+git clone https://github.com/fidesprotocol/fides-run.git
+cd fides-run
+python demo/fides_run.py
+```
+
+This is proof, not product. ~500 lines of Python demonstrating that the protocol works.
 
 ---
 
