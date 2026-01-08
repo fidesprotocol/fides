@@ -63,6 +63,15 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 fad49b01b8f263e179987dc6781bf83cf0efcbce9b20e6beaf8f182a3bffc544
 ```
 
+**Blockchain timestamp:**
+
+This specification was timestamped on the Bitcoin blockchain via OpenTimestamps.
+
+- **Proof file:** [FIDES-v0.1.md.ots](FIDES-v0.1.md.ots)
+- **Verify:** Upload both `spec/FIDES-v0.1.md` and `FIDES-v0.1.md.ots` at [opentimestamps.org](https://opentimestamps.org/)
+
+The timestamp is independently verifiable — any alteration to the specification would be detected.
+
 ## Reference Materials
 
 - [Architecture](reference/architecture.md)
