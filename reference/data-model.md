@@ -30,12 +30,12 @@ All records share common properties:
   "decision_id": "uuid-v4",
   "authority_id": "string",
   "deciders_id": ["string"],
-  "act_type": "commitment | contract | amendment",
+  "act_type": "string (implementation-defined)",
   "maximum_value": "decimal",
   "beneficiary": "string",
   "legal_basis": "string",
   "decision_date": "ISO 8601",
-  "previous_record_hash": "string (SHA-256)",
+  "previous_record_hash": "string (hash)",
   "record_timestamp": "ISO 8601",
   "signatures": ["string"]
 }
@@ -49,12 +49,12 @@ All records share common properties:
 | `decision_id` | UUID v4 | Yes | Globally unique |
 | `authority_id` | String | Yes | Non-empty, identifies issuing authority |
 | `deciders_id` | Array[String] | Yes | Non-empty array |
-| `act_type` | Enum | Yes | One of: commitment, contract, amendment |
+| `act_type` | String | Yes | Implementation-defined (e.g., commitment, contract, amendment) |
 | `maximum_value` | Decimal | Yes | > 0 |
 | `beneficiary` | String | Yes | Non-empty, tax ID or entity identifier |
 | `legal_basis` | String | Yes | Non-empty, legal reference |
 | `decision_date` | DateTime | Yes | ISO 8601, <= record_timestamp |
-| `previous_record_hash` | String | Yes | SHA-256 hex, 64 characters |
+| `previous_record_hash` | String | Yes | Hex-encoded hash (e.g., SHA-256: 64 characters) |
 | `record_timestamp` | DateTime | Yes | ISO 8601, server time at recording |
 | `signatures` | Array[String] | Yes | Non-empty array of signer identifiers |
 
@@ -91,12 +91,12 @@ Extends DR with additional fields for exceptions.
   "decision_id": "uuid-v4",
   "authority_id": "string",
   "deciders_id": ["string"],
-  "act_type": "commitment | contract | amendment",
+  "act_type": "string (implementation-defined)",
   "maximum_value": "decimal",
   "beneficiary": "string",
   "legal_basis": "string",
   "decision_date": "ISO 8601",
-  "previous_record_hash": "string (SHA-256)",
+  "previous_record_hash": "string (hash)",
   "record_timestamp": "ISO 8601",
   "signatures": ["string"],
   "exception_type": "string",
@@ -167,7 +167,7 @@ Generic types are prohibited:
   "deciders_id": ["string"],
   "revocation_reason": "string",
   "revocation_date": "ISO 8601",
-  "previous_record_hash": "string (SHA-256)",
+  "previous_record_hash": "string (hash)",
   "record_timestamp": "ISO 8601",
   "signatures": ["string"]
 }
@@ -184,7 +184,7 @@ Generic types are prohibited:
 | `deciders_id` | Array[String] | Yes | Non-empty array |
 | `revocation_reason` | String | Yes | Non-empty |
 | `revocation_date` | DateTime | Yes | ISO 8601 |
-| `previous_record_hash` | String | Yes | SHA-256 hex |
+| `previous_record_hash` | String | Yes | Hex-encoded hash |
 | `record_timestamp` | DateTime | Yes | ISO 8601 |
 | `signatures` | Array[String] | Yes | Non-empty array |
 
@@ -234,16 +234,22 @@ This structure is used as input to `isPaymentAuthorized()`.
 The first record in a chain has a special `previous_record_hash`:
 
 ```
-previous_record_hash = SHA256("FIDES-GENESIS-" + authority_id)
+previous_record_hash = HASH("FIDES-GENESIS-" + authority_id + "-" + genesis_timestamp)
 ```
+
+Where `genesis_timestamp` is the `record_timestamp` of the first record in the chain.
+
+This ensures uniqueness and auditability across independent system instances.
 
 ### 6.2 Subsequent Records
 
 For all records after genesis:
 
 ```
-previous_record_hash = SHA256(canonical_json(previous_record))
+previous_record_hash = HASH(canonical_json(previous_record))
 ```
+
+Implementations must use a collision-resistant cryptographic hash function (e.g., SHA-256 or stronger).
 
 ### 6.3 Canonical JSON
 
@@ -255,20 +261,22 @@ To ensure deterministic hashing:
 4. Numbers without trailing zeros
 5. Dates in ISO 8601 UTC (Z suffix)
 
+**Note:** Numeric fields SHOULD be represented as fixed-precision decimals, not floating-point, to avoid hash divergence between implementations.
+
 ### 6.4 Example Chain
 
 ```
 Record 0 (Genesis):
-  previous_record_hash = SHA256("FIDES-GENESIS-GOV-HEALTH-001")
-  record_hash = SHA256(Record 0) = "aaa..."
+  previous_record_hash = HASH("FIDES-GENESIS-GOV-HEALTH-001-2024-01-01T00:00:00Z")
+  record_hash = HASH(Record 0) = "aaa..."
 
 Record 1:
   previous_record_hash = "aaa..."
-  record_hash = SHA256(Record 1) = "bbb..."
+  record_hash = HASH(Record 1) = "bbb..."
 
 Record 2:
   previous_record_hash = "bbb..."
-  record_hash = SHA256(Record 2) = "ccc..."
+  record_hash = HASH(Record 2) = "ccc..."
 ```
 
 ---
@@ -278,7 +286,7 @@ Record 2:
 For external anchoring, a state hash represents all records:
 
 ```
-state_hash = SHA256(record_0_hash + record_1_hash + ... + record_n_hash)
+state_hash = HASH(record_0_hash + record_1_hash + ... + record_n_hash)
 ```
 
 Or using Merkle tree for efficiency:
@@ -291,6 +299,8 @@ state_hash = MerkleRoot(all_record_hashes)
 
 ## 8. Validation Rules
 
+These validation rules are illustrative and must not contradict the normative rules defined in the specification (FIDES-v0.1.md).
+
 ### 8.1 DR Validation
 
 ```
@@ -299,7 +309,7 @@ valid_dr(dr) =
   is_uuid_v4(dr.decision_id) AND
   non_empty(dr.authority_id) AND
   non_empty(dr.deciders_id) AND
-  dr.act_type IN ["commitment", "contract", "amendment"] AND
+  non_empty(dr.act_type) AND  // act_type is implementation-defined
   dr.maximum_value > 0 AND
   non_empty(dr.beneficiary) AND
   non_empty(dr.legal_basis) AND
@@ -369,6 +379,8 @@ For legal compliance (e.g., privacy laws), implementations may:
 - Delete keys after retention period
 
 **The record structure and hash chain must remain intact.**
+
+Implementations remain responsible for complying with applicable data protection laws without compromising protocol integrity.
 
 ---
 
