@@ -69,7 +69,7 @@ Technical immutability does not automatically confer legal standing. Courts and 
 
 **Does not prevent collusion**
 
-If all separated roles (Record Operator, Immutability Guardian, Technical Auditor) collude, the protocol can be subverted. Fides assumes at least one honest actor or vigilant third party.
+If all separated roles (Record Operator, Immutability Guardian, Technical Auditor) collude, the protocol can be subverted. Fides assumes at least one honest actor or vigilant third party. No technical system can guarantee integrity under total collusion and absence of independent verification.
 
 **Does not eliminate fraud**
 
@@ -160,6 +160,8 @@ Any attempt at retroactive alteration invalidates the record.
 - `beneficiary`: Format depends on jurisdiction (e.g., CPF/CNPJ in Brazil, SSN/EIN in USA, VAT number in EU).
 - `signatures`: Format is implementation-defined. May be cryptographic signatures, certificate IDs, or other verifiable identifiers.
 
+**Binding Rule:** Every identifier listed in `deciders_id` MUST correspond to exactly one element in `signatures`. Unmatched deciders or signatures invalidate the record.
+
 ### 6.4 Validity Rules
 
 A Decision Record is valid if, and only if:
@@ -167,9 +169,10 @@ A Decision Record is valid if, and only if:
 1. All required fields are present
 2. `maximum_value` > 0
 3. `decision_date` <= `record_timestamp`
-4. `previous_record_hash` corresponds to the last valid record
+4. `previous_record_hash` corresponds exactly to the last valid record
 5. The record has not been revoked
 6. The record respects the format and types defined in this protocol
+7. `authority_id` refers to an authority that exists at `decision_date`
 
 **Failure in any item = invalid record.**
 
@@ -209,6 +212,16 @@ Every Decision Record must be:
 
 **A hidden record is an invalid record.**
 
+**Definition of Public:** Public means accessible without authentication, free of charge, and readable using open standards.
+
+### 6.8 Finality
+
+Once a Decision Record is recorded and publicly anchored, it is final.
+
+Its legal, administrative, or political contestation does not suspend its technical validity unless a formal Revocation Record exists.
+
+**No limbo. No provisional state. Recorded means final.**
+
 ---
 
 ## 7. Payment Authorization
@@ -235,6 +248,10 @@ A payment P is authorized if, and only if, all conditions below are true:
 6. The DR has not been revoked
 
 **Failure in any item = payment not authorized.**
+
+**Payment Atomicity:** Every payment, partial or total, is subject to independent verification under this protocol. Splitting payments does not bypass `maximum_value` constraints.
+
+**Definition of Payment Date:** For the purpose of this protocol, payment date refers to the moment of irreversible execution of funds.
 
 ### 7.3 Nature of Verification
 
@@ -297,6 +314,7 @@ Anchor requirements:
 - External to the system
 - Public
 - Verifiable by third parties
+- Outside the administrative control of the Record Operator
 
 ### 8.4 Anchor Frequency
 
@@ -397,6 +415,7 @@ It is **PROHIBITED**:
 - Exception without identified decider
 - "Operational" exception in the database
 - Exception outside the record
+- Consecutive or chained SDRs for the same purpose
 
 ---
 
@@ -422,6 +441,7 @@ After a valid RR:
 - New payments based on the revoked DR are prohibited
 - Already executed payments are not erased
 - History remains intact
+- Revocation does not retroactively legitimize payments executed before the revocation
 
 ---
 
@@ -456,6 +476,8 @@ Every implementation compatible with Fides must separate:
 
 **No person or entity may accumulate more than one function.**
 
+Control includes direct or indirect authority, contractual dominance, or technical dependency.
+
 ### 11.3 Access
 
 All privileged access:
@@ -475,6 +497,8 @@ Every implementation of Fides must:
 - Make public any modifications
 
 **Closed implementation is not compatible with Fides.**
+
+Publishing partial source code, mock implementations, or non-functional stubs does not satisfy the open-source requirement.
 
 ### 11.5 Prohibitions
 
