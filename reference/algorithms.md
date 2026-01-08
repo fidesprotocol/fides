@@ -21,15 +21,17 @@ All algorithms are deterministic and publicly verifiable.
 
 ### 2.1 Hash Function
 
-**Required:** SHA-256
+**Required:** A collision-resistant cryptographic hash function (e.g., SHA-256 or equivalent).
 
 ```
-HASH(data) = SHA256(data)
+HASH(data) → hex string
 ```
 
-Output: 64 hexadecimal characters (256 bits)
+Example using SHA-256: Output is 64 hexadecimal characters (256 bits).
 
 ### 2.2 Canonical JSON
+
+The following pseudocode is illustrative. Any implementation producing identical canonical output is valid.
 
 Before hashing, convert record to canonical form:
 
@@ -54,10 +56,12 @@ def canonical_json(record):
 For the first record in a chain:
 
 ```python
-def genesis_hash(authority_id):
-    seed = f"FIDES-GENESIS-{authority_id}"
+def genesis_hash(authority_id, genesis_timestamp):
+    seed = f"FIDES-GENESIS-{authority_id}-{genesis_timestamp}"
     return HASH(seed.encode('utf-8'))
 ```
+
+Where `genesis_timestamp` is the `record_timestamp` of the first record in the chain (ISO 8601 UTC).
 
 ### 2.4 Record Hash
 
@@ -71,13 +75,16 @@ def record_hash(record):
 
 ```python
 def create_record(record_data, previous_record):
+    record_data['record_timestamp'] = current_utc_time()
+
     if previous_record is None:
         # Genesis
-        record_data['previous_record_hash'] = genesis_hash(record_data['authority_id'])
+        record_data['previous_record_hash'] = genesis_hash(
+            record_data['authority_id'],
+            record_data['record_timestamp']
+        )
     else:
         record_data['previous_record_hash'] = record_hash(previous_record)
-
-    record_data['record_timestamp'] = current_utc_time()
 
     return record_data
 ```
@@ -175,7 +182,9 @@ def sum_previous_payments(decision_id):
 
 The function returns only `True` or `False`.
 
-For debugging/audit, implementations may log:
+**Security warning:** Implementations MUST NOT expose rejection reasons to payment operators or deciders, as this could enable adversarial probing of the validation logic.
+
+For internal debugging/audit only, implementations may log:
 
 ```python
 def is_payment_authorized_with_reason(decision_id, payment):
@@ -228,7 +237,7 @@ def verify_chain_integrity(records):
 
     # Verify genesis record
     first = records[0]
-    expected_genesis = genesis_hash(first['authority_id'])
+    expected_genesis = genesis_hash(first['authority_id'], first['record_timestamp'])
 
     if first['previous_record_hash'] != expected_genesis:
         return (False, 0)
@@ -398,10 +407,11 @@ def validate_dr(dr):
     if not isinstance(dr['deciders_id'], list) or len(dr['deciders_id']) == 0:
         errors.append("INVALID_DECIDERS_ID")
 
-    if dr['act_type'] not in ['commitment', 'contract', 'amendment']:
-        errors.append("INVALID_ACT_TYPE")
+    if not isinstance(dr['act_type'], str) or len(dr['act_type']) == 0:
+        errors.append("INVALID_ACT_TYPE")  # act_type is implementation-defined
 
-    if not isinstance(dr['maximum_value'], (int, float)) or dr['maximum_value'] <= 0:
+    # maximum_value should be a fixed-precision decimal (not floating-point)
+    if not is_positive_decimal(dr['maximum_value']):
         errors.append("INVALID_MAXIMUM_VALUE")
 
     if not is_iso8601(dr['decision_date']):
@@ -415,7 +425,7 @@ def validate_dr(dr):
         errors.append("DECISION_DATE_AFTER_RECORD_TIMESTAMP")
 
     # Hash format
-    if not is_sha256_hex(dr['previous_record_hash']):
+    if not is_valid_hash_hex(dr['previous_record_hash']):
         errors.append("INVALID_PREVIOUS_RECORD_HASH")
 
     if not isinstance(dr['signatures'], list) or len(dr['signatures']) == 0:
@@ -498,7 +508,7 @@ def validate_rr(rr, existing_records):
     if not is_uuid_v4(rr['revocation_id']):
         errors.append("INVALID_REVOCATION_ID")
 
-    if not is_sha256_hex(rr['previous_record_hash']):
+    if not is_valid_hash_hex(rr['previous_record_hash']):
         errors.append("INVALID_PREVIOUS_RECORD_HASH")
 
     return (len(errors) == 0, errors)
@@ -543,16 +553,17 @@ def parse_date(value):
     return datetime.fromisoformat(value.replace('Z', '+00:00'))
 ```
 
-### 7.3 SHA-256 Validation
+### 7.3 Hash Validation
 
 ```python
-def is_sha256_hex(value):
+def is_valid_hash_hex(value):
     """
-    Check if value is valid SHA-256 hex string.
+    Check if value is valid hexadecimal hash string.
+    Length depends on the hash function used (e.g., 64 chars for SHA-256).
     """
     if not isinstance(value, str):
         return False
-    if len(value) != 64:
+    if len(value) < 32:  # Minimum reasonable hash length
         return False
     try:
         int(value, 16)
@@ -561,11 +572,28 @@ def is_sha256_hex(value):
         return False
 ```
 
+### 7.4 Decimal Validation
+
+```python
+from decimal import Decimal, InvalidOperation
+
+def is_positive_decimal(value):
+    """
+    Check if value is a positive fixed-precision decimal.
+    Implementations should use decimal types, not floating-point.
+    """
+    try:
+        d = Decimal(str(value))
+        return d > 0
+    except (InvalidOperation, TypeError):
+        return False
+```
+
 ---
 
 ## 8. Error Codes
 
-Standard error codes for implementation consistency:
+Illustrative error codes for implementation reference. Implementations MAY use different codes or formats:
 
 | Code | Meaning |
 |------|---------|
