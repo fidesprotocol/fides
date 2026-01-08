@@ -1,6 +1,6 @@
 # Fides Protocol - Threat Model
 
-This document describes known attack vectors against the Fides Protocol and explains why they are **not mitigated by design**. These are deliberate boundaries, not oversights.
+This document describes known attack vectors against the Fides Protocol and explains how they are addressed, exposed, or intentionally left outside the protocol's scope. These are deliberate boundaries, not oversights.
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** A corrupt decider creates a formally valid DR authorizing a fraudulent expenditure. All fields are correct, signatures are valid, but the decision itself is illegitimate.
 
-**Why not mitigated:** Fides verifies structure, not merit. Evaluating decision content would require subjective judgment, destroying binary verification.
+**Why not fully prevented:** Fides verifies structure, not merit. Evaluating decision content would require subjective judgment, destroying binary verification.
 
 **What Fides provides:**
 - The fraudulent DR is **public**
@@ -37,7 +37,7 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** A large irregular expenditure (e.g., $1 billion) is split into many smaller DRs (e.g., 1000 x $1 million), each formally valid.
 
-**Why not mitigated:** Fides validates individual records, not spending patterns. Pattern detection requires analytics outside the protocol scope.
+**Why not fully prevented:** Fides validates individual records, not spending patterns. Pattern detection requires analytics outside the protocol scope.
 
 **What Fides provides:**
 - All 1000 DRs are **public**
@@ -55,7 +55,7 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** The Record Operator and Immutability Guardian collude to publish false anchors, hiding retroactive alterations.
 
-**Why not mitigated:** If both separated roles collude, the protocol's structural separation is violated. Fides cannot prevent violations of its own prerequisites.
+**Why not fully prevented:** If both separated roles collude, the protocol's structural separation is violated. Fides cannot prevent violations of its own prerequisites.
 
 **What Fides provides:**
 - The protocol explicitly **requires** separation (Section 8.6)
@@ -70,10 +70,10 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** An attacker gains control of all three roles (Record Operator, Immutability Guardian, Technical Auditor).
 
-**Why not mitigated:** Complete institutional capture is outside technical mitigation scope. No protocol survives total compromise.
+**Why not fully prevented:** Complete institutional capture is outside technical mitigation scope. No protocol survives total compromise.
 
 **What Fides provides:**
-- Requires **at least one honest actor** or vigilant third party
+- Assumes the existence of **at least one honest role** or independent external verifier
 - All data remains **publicly verifiable**
 - External parties can **independently audit** at any time
 
@@ -87,7 +87,7 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** Authorities refuse to adopt Fides, or adopt it partially, excluding certain payment types.
 
-**Why not mitigated:** Fides is a technical protocol, not a law. It cannot force adoption.
+**Why not fully prevented:** Fides is a technical protocol, not a law. It cannot force adoption.
 
 **What Fides provides:**
 - Clear **compliance checklist** (Appendix C)
@@ -102,7 +102,7 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** Authorities create many SDRs (Special Decision Records) to bypass normal DR requirements.
 
-**Why not mitigated:** The protocol cannot prevent legitimate exception use. It can only make exceptions costly.
+**Why not fully prevented:** The protocol cannot prevent legitimate exception use. It can only make exceptions costly.
 
 **What Fides provides:**
 - Exceptions require **typed categories** — no generic "urgent" (Section 9.3)
@@ -120,7 +120,7 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** Attacker creates DRs using fabricated or stolen decider identities.
 
-**Why not mitigated:** Fides defines what fields a DR must have, not how identity systems work. Identity infrastructure is implementation-specific.
+**Why not fully prevented:** Fides defines what fields a DR must have, not how identity systems work. Identity infrastructure is implementation-specific.
 
 **What Fides provides:**
 - `deciders_id` field is **required**
@@ -137,7 +137,7 @@ Security protocols benefit from explicit threat documentation. This document:
 
 **Description:** Between anchor publications, alterations are made and then "corrected" before the next anchor.
 
-**Why not mitigated:** Fides requires frequent anchoring but doesn't specify exact frequency. Trade-off between cost and security window.
+**Why not fully prevented:** Fides requires frequent anchoring but doesn't specify exact frequency. Trade-off between cost and security window.
 
 **What Fides provides:**
 - Explicit guidance: "Rare anchor = fraud window" (Section 8.4)
@@ -150,13 +150,13 @@ Security protocols benefit from explicit threat documentation. This document:
 
 ## Summary Table
 
-| Attack | Prevented? | Mitigated? | What Fides Provides |
-|--------|------------|------------|---------------------|
-| Toxic Record | No | Partially | Public, attributed, immutable trace |
-| Fragmentation | No | Partially | Visible, aggregatable pattern |
+| Attack | Prevented? | Detectable? | What Fides Provides |
+|--------|------------|-------------|---------------------|
+| Toxic Record | No | Yes | Public, attributed, immutable trace |
+| Fragmentation | No | Yes | Visible, aggregatable pattern |
 | Anchor Capture | No | Yes | Detectable, invalidating |
-| Total Compromise | No | No | Assumes non-omnipotent adversary |
-| Political Circumvention | No | No | Clear compliance definition |
+| Total Compromise | No | Depends | Assumes non-omnipotent adversary |
+| Political Circumvention | No | N/A | Clear compliance definition |
 | Exception Abuse | No | Yes | Costly, visible, expiring |
 | Fake Identity | No | Partially | Required fields, implementation-defined |
 | Anchor Window | No | Partially | Explicit trade-off guidance |
