@@ -90,4 +90,12 @@ To contribute, open an issue or submit a pull request.
 
 ---
 
+## Contact
+
+For security reports, compatibility questions, or protocol discussions:
+
+**fides-protocol@proton.me**
+
+---
+
 *Integrity as infrastructure.*
