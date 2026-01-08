@@ -49,7 +49,60 @@ These elements are not necessary to block misuse.
 
 ---
 
-## 4. Inviolable Principles
+## 4. Limitations and Non-Goals
+
+This section explicitly documents what the Fides Protocol does **not** do. These are not oversights — they are deliberate design boundaries.
+
+### 4.1 What Fides Does NOT Do
+
+**Does not validate decision content**
+
+Fides verifies that a Decision Record exists and is structurally valid. It does not evaluate whether the decision itself is wise, legal, or legitimate. A formally valid DR authorizing a fraudulent expenditure will pass verification.
+
+**Does not replace human judgment**
+
+The protocol does not decide what should be funded, at what price, or for what purpose. These remain political and administrative decisions made by humans before the DR is created.
+
+**Does not guarantee legal validity**
+
+Technical immutability does not automatically confer legal standing. Courts and legal systems in each jurisdiction determine whether cryptographic records constitute valid evidence.
+
+**Does not prevent collusion**
+
+If all separated roles (Record Operator, Immutability Guardian, Technical Auditor) collude, the protocol can be subverted. Fides assumes at least one honest actor or vigilant third party.
+
+**Does not eliminate fraud**
+
+Fraud can still occur. What Fides guarantees is that fraud leaves a **permanent, public, attributed trace**. The fraudster must sign their own fraud.
+
+### 4.2 Deliberate Trade-offs
+
+| Trade-off | Rationale |
+|-----------|-----------|
+| No merit analysis | Keeps verification objective and binary |
+| No human override | Prevents "emergency" exceptions from becoming routine |
+| No content inspection | Avoids interpretive disputes and subjective blocking |
+| Depends on adoption | Political acceptance is required; protocol cannot force itself |
+
+### 4.3 What Fides DOES Guarantee
+
+Despite its limitations, the protocol provides hard guarantees:
+
+1. **No payment without record** — Structurally enforced
+2. **Immutable history** — Past cannot be altered
+3. **Public attribution** — Every decision has identified deciders
+4. **Verifiable by anyone** — No trust required, only computation
+5. **Detectable tampering** — Any chain break is visible
+
+### 4.4 The Core Promise
+
+> Fides does not stop corruption. It stops corruption from being silent.
+
+Any irregular payment executed under Fides leaves a permanent, verifiable, attributed record. The protocol makes **deniability impossible**, not fraud impossible.
+
+---
+
+## 5. Inviolable Principles
 
 1. **No record, no payment**
 2. **Expenditure becomes public at the decision, not at payment**
@@ -64,16 +117,16 @@ If any of these principles falls, the protocol fails.
 
 ---
 
-## 5. Decision Record (DR)
+## 6. Decision Record (DR)
 
-### 5.1 Definition
+### 6.1 Definition
 
 A Decision Record (DR) is the technical artifact that potentially authorizes the future execution of a public expenditure.
 
 - Without a valid DR, no payment can be executed
 - The DR is created at the moment of administrative decision, never at payment
 
-### 5.2 Nature of the Record
+### 6.2 Nature of the Record
 
 The Decision Record is:
 
@@ -85,23 +138,29 @@ The Decision Record is:
 
 Any attempt at retroactive alteration invalidates the record.
 
-### 5.3 Required Fields
+### 6.3 Required Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `decision_id` | UUID v4 | Unique identifier of the decision |
 | `authority_id` | String | Unique identifier of the authority/agency |
 | `deciders_id` | Array | IDs of the decision makers (non-empty) |
-| `act_type` | Enum | `commitment`, `contract`, `amendment` |
-| `maximum_value` | Decimal | Positive numeric value |
-| `beneficiary` | String | Tax ID or entity identifier |
+| `act_type` | String | Type of administrative act (implementation-defined) |
+| `currency` | String | ISO 4217 currency code (e.g., USD, EUR, BRL) |
+| `maximum_value` | Decimal | Positive numeric value in the specified currency |
+| `beneficiary` | String | Tax ID or entity identifier (format varies by jurisdiction) |
 | `legal_basis` | String | Explicit legal reference |
-| `decision_date` | DateTime | Date and time of the decision |
-| `previous_record_hash` | String | Cryptographic hash of the previous record |
-| `record_timestamp` | DateTime | Date and time of the record |
+| `decision_date` | DateTime | Date and time of the decision (ISO 8601) |
+| `previous_record_hash` | String | Cryptographic hash of the previous record (SHA-256) |
+| `record_timestamp` | DateTime | Date and time of the record (ISO 8601) |
 | `signatures` | Array | Identifiers of the signatories |
 
-### 5.4 Validity Rules
+**Implementation Notes:**
+- `act_type`: Examples include "commitment", "contract", "amendment", "purchase_order". The exact taxonomy is defined by each jurisdiction.
+- `beneficiary`: Format depends on jurisdiction (e.g., CPF/CNPJ in Brazil, SSN/EIN in USA, VAT number in EU).
+- `signatures`: Format is implementation-defined. May be cryptographic signatures, certificate IDs, or other verifiable identifiers.
+
+### 6.4 Validity Rules
 
 A Decision Record is valid if, and only if:
 
@@ -114,7 +173,7 @@ A Decision Record is valid if, and only if:
 
 **Failure in any item = invalid record.**
 
-### 5.5 Immutability
+### 6.5 Immutability
 
 It is **PROHIBITED** to:
 
@@ -129,7 +188,7 @@ Corrections must occur exclusively through:
 
 **History is never erased.**
 
-### 5.6 Cryptographic Chaining
+### 6.6 Cryptographic Chaining
 
 Each Decision Record must contain:
 
@@ -140,7 +199,7 @@ previous_record_hash = HASH(immediately_previous_record)
 - The hash function must be public, deterministic, and collision-resistant
 - Breaking the chain invalidates all subsequent records
 
-### 5.7 Publicity
+### 6.7 Publicity
 
 Every Decision Record must be:
 
@@ -152,9 +211,9 @@ Every Decision Record must be:
 
 ---
 
-## 6. Payment Authorization
+## 7. Payment Authorization
 
-### 6.1 Central Principle
+### 7.1 Central Principle
 
 The decider decides once. Execution only verifies.
 
@@ -164,21 +223,20 @@ After a valid DR exists:
 - No operator "releases" payment
 - The system only verifies validity
 
-### 6.2 Authorization Conditions
+### 7.2 Authorization Conditions
 
 A payment P is authorized if, and only if, all conditions below are true:
 
 1. A `decision_id` is provided
 2. The corresponding DR is valid
-3. The DR precedes the payment
+3. The DR precedes the payment (`decision_date` < payment date)
 4. The accumulated amount paid <= `maximum_value` of the DR
-5. The beneficiary of the payment = beneficiary of the DR
-6. The DR is not revoked
-7. The payment is within the temporal and material scope of the DR
+5. The payment beneficiary = DR beneficiary
+6. The DR has not been revoked
 
 **Failure in any item = payment not authorized.**
 
-### 6.3 Nature of Verification
+### 7.3 Nature of Verification
 
 Verification is:
 
@@ -187,7 +245,7 @@ Verification is:
 - **Without interpretation** — does not evaluate merit
 - **Without implicit exception** — there is no "almost valid"
 
-### 6.4 Verification Interface
+### 7.4 Verification Interface
 
 The protocol requires only one logical function:
 
@@ -197,7 +255,7 @@ isPaymentAuthorized(decision_id, payment) -> true | false
 
 Implementations may expose this as an API, internal service, or local routine. The protocol does not define technology, only behavior.
 
-### 6.5 Consequence
+### 7.5 Consequence
 
 If verification returns `false`:
 
@@ -210,13 +268,13 @@ Any payment executed against a `false` response is proven irregular execution.
 
 ---
 
-## 7. Immutability and External Anchor
+## 8. Immutability and External Anchor
 
-### 7.1 Principle
+### 8.1 Principle
 
 The past cannot be altered, not even by those who control the system.
 
-### 7.2 Structural Rule (Append-Only)
+### 8.2 Structural Rule (Append-Only)
 
 The system implementing Fides must operate in:
 
@@ -227,7 +285,7 @@ The system implementing Fides must operate in:
 
 Any implementation that allows retroactive alteration is not compatible with Fides.
 
-### 7.3 External Anchor
+### 8.3 External Anchor
 
 To prevent silent sabotage:
 
@@ -240,13 +298,13 @@ Anchor requirements:
 - Public
 - Verifiable by third parties
 
-### 7.4 Anchor Frequency
+### 8.4 Anchor Frequency
 
 - The anchor must be published at regular intervals
 - Rare anchor = fraud window
 - Frequent anchor = high attack cost
 
-### 7.5 Independent Verification
+### 8.5 Independent Verification
 
 Any third party must be able to:
 
@@ -256,7 +314,7 @@ Any third party must be able to:
 
 This does not require trust, only computation.
 
-### 7.6 Technical Separation of Powers
+### 8.6 Technical Separation of Powers
 
 No agent should simultaneously accumulate:
 
@@ -265,7 +323,7 @@ No agent should simultaneously accumulate:
 
 This separation is mandatory.
 
-### 7.7 Consequence
+### 8.7 Consequence
 
 If immutability or chaining is broken:
 
@@ -275,9 +333,9 @@ If immutability or chaining is broken:
 
 ---
 
-## 8. Typed Exceptions
+## 9. Typed Exceptions
 
-### 8.1 Principle
+### 9.1 Principle
 
 Exception is permitted. Improvisation is not.
 
@@ -291,13 +349,13 @@ Fides admits exceptions, but only if they are:
 
 **Exception without cost becomes rule.**
 
-### 8.2 Special Decision Record (SDR)
+### 9.2 Special Decision Record (SDR)
 
 An exception occurs exclusively as a Special Decision Record (SDR), created **before** payment.
 
 Without a valid SDR, there is no exception.
 
-### 8.3 Permitted Types (examples)
+### 9.3 Permitted Types (examples)
 
 Each exception must belong to an explicit type:
 
@@ -308,7 +366,7 @@ Each exception must belong to an explicit type:
 
 **Generic types ("exceptional", "urgent", "special") are prohibited.**
 
-### 8.4 Additional SDR Fields
+### 9.4 Additional SDR Fields
 
 In addition to the standard DR fields, every exception must contain:
 
@@ -319,7 +377,7 @@ In addition to the standard DR fields, every exception must contain:
 | `maximum_term` | Expiration date (required) |
 | `reinforced_deciders` | >= minimum deciders of common DR |
 
-### 8.5 Structural Cost
+### 9.5 Structural Cost
 
 Every exception must impose at least one additional cost:
 
@@ -329,7 +387,7 @@ Every exception must impose at least one additional cost:
 - Mandatory subsequent review
 - Explicit marking as exception
 
-### 8.6 Prohibitions
+### 9.6 Prohibitions
 
 It is **PROHIBITED**:
 
@@ -342,13 +400,13 @@ It is **PROHIBITED**:
 
 ---
 
-## 9. Revocations
+## 10. Revocations
 
-### 9.1 Principle
+### 10.1 Principle
 
 Nothing is erased. Decisions are revoked, not corrected.
 
-### 9.2 Revocation Record (RR)
+### 10.2 Revocation Record (RR)
 
 A decision is revoked exclusively by a Revocation Record (RR), which:
 
@@ -357,7 +415,7 @@ A decision is revoked exclusively by a Revocation Record (RR), which:
 - Is public
 - Has valid deciders
 
-### 9.3 Effect of Revocation
+### 10.3 Effect of Revocation
 
 After a valid RR:
 
@@ -367,15 +425,15 @@ After a valid RR:
 
 ---
 
-## 10. Minimum Governance
+## 11. Minimum Governance
 
-### 10.1 Principle
+### 11.1 Principle
 
 No person, position, or entity can control the entire protocol.
 
 Fides does not depend on virtue, it depends on structure.
 
-### 10.2 Mandatorily Separated Functions
+### 11.2 Mandatorily Separated Functions
 
 Every implementation compatible with Fides must separate:
 
@@ -398,7 +456,7 @@ Every implementation compatible with Fides must separate:
 
 **No person or entity may accumulate more than one function.**
 
-### 10.3 Access
+### 11.3 Access
 
 All privileged access:
 
@@ -408,7 +466,7 @@ All privileged access:
 
 Permanent access is prohibited. Emergency access generates a public record.
 
-### 10.4 Open Source
+### 11.4 Open Source
 
 Every implementation of Fides must:
 
@@ -418,7 +476,7 @@ Every implementation of Fides must:
 
 **Closed implementation is not compatible with Fides.**
 
-### 10.5 Prohibitions
+### 11.5 Prohibitions
 
 It is **PROHIBITED**:
 
@@ -427,7 +485,7 @@ It is **PROHIBITED**:
 - Dependence on exclusive vendor
 - Opaque infrastructure control
 
-### 10.6 Consequence
+### 11.6 Consequence
 
 If governance fails:
 
@@ -438,7 +496,7 @@ If governance fails:
 
 ---
 
-## 11. Nature of the Protocol
+## 12. Nature of the Protocol
 
 Fides:
 
@@ -452,7 +510,7 @@ It is a public technical rule, implementable by any entity, auditable by any per
 
 ---
 
-## 12. Success Criterion
+## 13. Success Criterion
 
 The protocol is considered successful if:
 
@@ -462,7 +520,7 @@ Nothing beyond this defines success.
 
 ---
 
-## 13. Evolution
+## 14. Evolution
 
 This document defines the minimum version necessary to guarantee integrity in execution.
 
@@ -470,7 +528,7 @@ Any future evolution cannot violate the principles established here.
 
 ---
 
-## 14. Normative Freeze Clause
+## 15. Normative Freeze Clause
 
 This document constitutes the immutable normative core of the Fides Protocol (v0.1).
 
@@ -489,9 +547,10 @@ Implementations, adaptations, or interpretations that contradict this core are n
   "decision_id": "uuid-v4",
   "authority_id": "string",
   "deciders_id": ["string"],
-  "act_type": "commitment | contract | amendment",
+  "act_type": "string",
+  "currency": "string (ISO 4217)",
   "maximum_value": "decimal",
-  "beneficiary": "string (tax ID / entity identifier)",
+  "beneficiary": "string",
   "legal_basis": "string",
   "decision_date": "ISO 8601",
   "previous_record_hash": "string (SHA-256)",
@@ -522,6 +581,9 @@ function isPaymentAuthorized(decision_id, payment):
         return false
 
     if payment.beneficiary != dr.beneficiary:
+        return false
+
+    if payment.currency != dr.currency:
         return false
 
     total_paid = sumPreviousPayments(decision_id)
