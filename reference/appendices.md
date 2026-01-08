@@ -6,6 +6,18 @@
 
 ---
 
+## Genesis Record
+
+The first record in a hash chain has no predecessor. The genesis hash calculation is defined in [algorithms.md](algorithms.md#genesis-hash).
+
+```
+genesis_hash = HASH("FIDES-GENESIS-" + authority_id + "-" + genesis_timestamp)
+```
+
+For validation rules and examples, see the Algorithms Reference document.
+
+---
+
 ## Appendix D: Revocation Record Schema
 
 A Revocation Record (RR) invalidates a previously issued Decision Record.
@@ -195,6 +207,23 @@ authorized = (accumulated + new_payment.value) <= DR.maximum_value
 2. Payment records must be immutable once created
 3. The payment tracking system must be queryable by `decision_id`
 4. Currency must match exactly — no automatic conversion
+
+### Multi-Currency
+
+The protocol requires exact currency match between DR and payment. If a payment must be made in a different currency than authorized:
+
+1. **Preferred:** Create a new DR in the target currency
+2. **Alternative:** Use an SDR with `exception_type: "CURRENCY_CONVERSION"` including conversion rate and source
+
+Automatic currency conversion is not supported. This is intentional — conversion rates introduce ambiguity and audit complexity.
+
+### Time Validation
+
+**Rule:** `payment_date >= decision_date`
+
+**Clock tolerance:** Implementations SHOULD use UTC timestamps and MAY tolerate minor clock differences (recommended: < 60 seconds) to prevent rejection of legitimate payments due to clock synchronization issues.
+
+**Ambiguous cases:** If `payment_date` is within tolerance of `decision_date`, implementations MAY log a warning and proceed, or flag for manual review.
 
 ### Verification Function
 
