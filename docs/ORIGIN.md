@@ -32,9 +32,9 @@ The project stopped being "a system" and became something bigger:
 
 1. **A thesis**: It is technically possible to block misuse before the money leaves
 2. **A proof**: Reference implementation that demonstrates the thesis
-3. **A pressure**: If it's possible and they don't want it, why not?
+3. **An implication**: If such a mechanism is possible, its absence becomes a legitimate question
 
-> "If I prove it's possible, the question becomes: why don't you want it?"
+> If it is provably possible, the question becomes: why is it not adopted?
 
 ---
 
@@ -53,7 +53,7 @@ In ancient Rome, Fides was the goddess of trust — the personification of the g
 
 The protocol doesn't create trust in people. It makes trust possible by making integrity structural.
 
-### Tagline
+### Tagline (non-normative)
 
 **"Built for trust."**
 
