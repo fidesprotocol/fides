@@ -33,7 +33,7 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 ```
 1. Authority creates a Decision Record (DR)
 2. System validates structure and rules
-3. Ledger stores immutably with hash chain
+3. Append-only record stores immutably with hash chain
 4. External anchor publishes state hash
 5. Payment executor queries: isPaymentAuthorized()?
 6. System returns true or false
@@ -86,7 +86,8 @@ See [LICENSE](LICENSE) for details.
 
 This protocol has no single author. See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
-To contribute, open an issue or submit a pull request.
+Contributions are welcome for documentation, tooling, and non-normative materials.
+The core specification (v0.1) is frozen.
 
 ---
 
