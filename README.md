@@ -114,7 +114,7 @@ See [CHANGELOG.md](spec/CHANGELOG.md) for full details.
 
 ## Executable Proof
 
-- [fides-run](https://github.com/fidesprotocol/fides-run) — Minimal working implementation
+- [fides-run](https://github.com/fidesprotocol/fides-run) — Minimal working implementation (v0.1 logic)
 
 ```bash
 git clone https://github.com/fidesprotocol/fides-run.git
@@ -122,7 +122,7 @@ cd fides-run
 python demo/fides_run.py
 ```
 
-This is proof, not product. ~500 lines of Python demonstrating that the protocol works.
+This is proof, not product. ~500 lines of Python demonstrating that the core blocking logic works. Implements v0.1 algorithms (hash chain, authorization checks) — security hardening from v0.3 requires production infrastructure.
 
 ---
 
