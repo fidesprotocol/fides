@@ -155,6 +155,7 @@ Any attempt at retroactive alteration invalidates the record.
 | `previous_record_hash` | String | Cryptographic hash of the previous record (SHA-256) |
 | `record_timestamp` | DateTime | Date and time of the record (ISO 8601), externally attested |
 | `signatures` | Array | Cryptographic signatures (see 6.3.2) |
+| `program_id` | String | (Optional) Identifier linking related decisions (see 6.3.4) |
 
 #### 6.3.1 Act Types (Mandatory Taxonomy)
 
@@ -201,6 +202,25 @@ Each signature MUST include:
 ```
 
 **Binding Rule:** Every identifier listed in `deciders_id` MUST correspond to exactly one valid cryptographic signature in `signatures`. Unmatched deciders, invalid signatures, or unverifiable signatures invalidate the record.
+
+#### 6.3.4 Program Identifier (Optional)
+
+The `program_id` field enables correlation of related Decision Records for audit purposes.
+
+**Purpose:** Detect semantic fragmentation — the practice of splitting a logically unified expenditure into multiple smaller DRs to avoid political or administrative thresholds.
+
+**Usage:**
+- The field is OPTIONAL — absence does not invalidate the DR
+- When present, it MUST be a stable identifier assigned by the authority
+- Multiple DRs MAY share the same `program_id`
+- The Technical Auditor SHOULD aggregate spending by `program_id` in reconciliation reports
+
+**Audit correlation:** Even without `program_id`, auditors SHOULD analyze patterns of:
+- Multiple DRs to the same `beneficiary` within short time windows
+- Sequential DRs with similar `legal_basis`
+- DRs just below known approval thresholds
+
+**Anti-gaming:** The `program_id` is informational, not binding. Its absence or misuse does not block payments but SHOULD trigger audit flags.
 
 #### 6.3.3 External PKI Requirements (Critical)
 
@@ -1275,7 +1295,30 @@ function performAuditReconciliation():
         if (anchor.timestamp - previous_anchor.timestamp) > 24_hours:
             report.addAlert("ANCHOR_FREQUENCY_EXCEEDED", anchor.anchor_id)
 
-    // Phase 4: Generate report
+    // Phase 4: Detect fragmentation patterns
+    for each beneficiary in unique(decision_record_ledger.beneficiary):
+
+        // 4a. Group DRs by beneficiary within 30-day windows
+        drs = findDRsByBeneficiary(beneficiary)
+        windows = groupByTimeWindow(drs, 30_days)
+
+        for each window in windows:
+            if count(window.drs) >= 3:
+                total_value = sum(dr.maximum_value for dr in window.drs)
+
+                // 4b. Flag if multiple small DRs could have been one larger DR
+                report.addAlert("FRAGMENTATION_PATTERN", beneficiary,
+                               count(window.drs), total_value, window.start_date)
+
+        // 4c. Aggregate by program_id if present
+        programs = groupByProgramId(drs)
+        for each program_id, program_drs in programs:
+            if program_id != null:
+                report.addProgramSummary(program_id,
+                                        count(program_drs),
+                                        sum(dr.maximum_value for dr in program_drs))
+
+    // Phase 5: Generate report
     report.drs_processed = count(decision_record_ledger)
     report.payments_processed = count(payment_ledger)
     report.anchors_verified = count(external_anchors)
@@ -1302,6 +1345,7 @@ function performAuditReconciliation():
 | `REGISTRATION_DELAY_EXCEEDED` | MEDIUM | DR registered >72h after decision |
 | `ANCHOR_MISMATCH` | CRITICAL | External anchor doesn't match |
 | `ANCHOR_FREQUENCY_EXCEEDED` | MEDIUM | >24h between anchors |
+| `FRAGMENTATION_PATTERN` | MEDIUM | Multiple DRs to same beneficiary below thresholds |
 
 #### 11.9.4 Audit Report Publication
 
@@ -1594,7 +1638,8 @@ Recovery Records are chained with DRs and subject to the same immutability rules
       "signed_at": "ISO 8601"
     }
   ],
-  "references": "uuid-v4 (optional, required for amendments)"
+  "references": "uuid-v4 (optional, required for amendments)",
+  "program_id": "string (optional, for audit correlation)"
 }
 ```
 
