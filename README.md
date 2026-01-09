@@ -1,6 +1,6 @@
 # Fides Protocol
 
-**Built for trust.**
+**Built for trust. Hardened for reality.**
 
 ---
 
@@ -32,9 +32,9 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 
 ```
 1. Authority creates a Decision Record (DR)
-2. System validates structure and rules
+2. System validates structure, signatures, and rules
 3. Append-only record stores immutably with hash chain
-4. External anchor publishes state hash
+4. External anchor publishes state hash (max every 24h)
 5. Payment executor queries: isPaymentAuthorized()?
 6. System returns true or false
 7. Payment executes or blocks — no override
@@ -49,6 +49,7 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 | **Binary verification** | `true` or `false` — no interpretation |
 | **Append-only ledger** | No UPDATE, no DELETE, no rewrite |
 | **External anchor** | Hash published to independent medium |
+| **Cryptographic signatures** | Non-repudiable attribution |
 | **Open source** | AGPLv3 — no capture possible |
 | **No single controller** | Separation of functions is mandatory |
 
@@ -56,27 +57,60 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 
 ## Specification
 
-- [Fides Protocol v0.1](spec/FIDES-v0.1.md) — The core specification (frozen)
+### Current Version
 
-**Canonical hash (SHA-256):**
+- **[Fides Protocol v0.3](spec/FIDES-v0.3.md)** — Active specification (security hardened)
+- **[Changelog](spec/CHANGELOG.md)** — Full version history
+
+### Previous Versions
+
+- [Fides Protocol v0.2](spec/FIDES-v0.2.md) — Superseded by v0.3
+- [Fides Protocol v0.1](spec/FIDES-v0.1.md) — Historical reference (frozen)
+- [v0.1 Known Issues](docs/v0.1-KNOWN-ISSUES.md) — Security gaps addressed in v0.2
+
+**v0.1 Canonical hash (SHA-256):**
 ```
 fad49b01b8f263e179987dc6781bf83cf0efcbce9b20e6beaf8f182a3bffc544
 ```
 
-**Blockchain timestamp:**
+**v0.1 Blockchain timestamp:**
 
-This specification was timestamped on the Bitcoin blockchain via OpenTimestamps.
+The original v0.1 specification was timestamped on the Bitcoin blockchain via OpenTimestamps.
 
 - **Proof file:** [FIDES-v0.1.md.ots](FIDES-v0.1.md.ots)
 - **Verify:** Upload both `spec/FIDES-v0.1.md` and `FIDES-v0.1.md.ots` at [opentimestamps.org](https://opentimestamps.org/)
 
-The timestamp is independently verifiable — any alteration to the specification would be detected.
+---
 
-## Reference Materials
+## What Changed in v0.3?
 
-- [Architecture](reference/architecture.md)
-- [Data Model](reference/data-model.md)
-- [Algorithms](reference/algorithms.md)
+Version 0.3 hardens security against adversarial implementations:
+
+| Aspect | v0.2 | v0.3 |
+|--------|------|------|
+| PKI trust | Government CA acceptable | External CA required |
+| Anchor redundancy | Single medium | Minimum 2 independent media |
+| NTP timestamps | Allowed | Deprecated/removed |
+| Beneficiary secrecy | Jurisdiction exception | No exceptions |
+| Org chart integrity | Timestamped once | Version-controlled + anchored |
+| Registration delay | Unmonitored window | Tiered justification |
+| Exception abuse | 30-day wait | Exponential cooldown |
+
+See [CHANGELOG.md](spec/CHANGELOG.md) for full details.
+
+---
+
+## Documentation
+
+- [Threat Model](docs/THREAT-MODEL.md) — Known attacks and design boundaries
+- [Criticism Response](docs/CRITICISM-RESPONSE.md) — Responses to common criticisms
+- [Origin Story](docs/ORIGIN.md) — Why this protocol exists (Portuguese)
+
+## Reference Materials (v0.1 historical)
+
+- [Architecture](reference/architecture.md) — *deprecated, see v0.3 spec*
+- [Data Model](reference/data-model.md) — *deprecated, see v0.3 spec*
+- [Algorithms](reference/algorithms.md) — *deprecated, see v0.3 spec*
 
 ## Executable Proof
 
@@ -112,8 +146,11 @@ See [LICENSE](LICENSE) for details.
 
 This protocol has no single author. See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
-Contributions are welcome for documentation, tooling, and non-normative materials.
-The core specification (v0.1) is frozen.
+Contributions are welcome for:
+- Documentation and translations
+- Tooling and reference implementations
+- Security review and testing
+- Compliance test suite
 
 ---
 

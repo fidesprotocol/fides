@@ -1,6 +1,9 @@
 # Appendices — Fides Protocol v0.1
 
-> **Status:** Informative
+> **DEPRECATED:** This document was written for Fides v0.1.
+> For current appendices, refer to [FIDES-v0.3.md](../spec/FIDES-v0.3.md) Appendices A-F which are authoritative and complete.
+
+> **Status:** Informative (historical reference only)
 > **Purpose:** Technical clarifications that complement the core specification
 > **Note:** These appendices do not modify the frozen specification. They provide implementation guidance for elements referenced but not fully detailed in the core spec.
 

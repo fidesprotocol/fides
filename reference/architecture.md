@@ -1,5 +1,8 @@
 # Fides Protocol — Architecture Reference
 
+> **DEPRECATED:** This document was written for Fides v0.1.
+> For current implementations, refer to [FIDES-v0.3.md](../spec/FIDES-v0.3.md) which contains complete architectural requirements including Payment Executor role, external PKI, and anchor redundancy.
+
 This document describes the architectural components and their relationships for implementations compatible with Fides Protocol v0.1.
 
 ---

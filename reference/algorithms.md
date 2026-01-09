@@ -1,5 +1,8 @@
 # Fides Protocol — Algorithms Reference
 
+> **DEPRECATED:** This document was written for Fides v0.1.
+> For current algorithms, refer to [FIDES-v0.3.md](../spec/FIDES-v0.3.md) Section 7 (Payment Authorization with atomicity) and Appendix D (pseudocode with locking).
+
 This document specifies the algorithms used in Fides Protocol v0.1.
 
 ---

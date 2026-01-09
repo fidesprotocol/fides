@@ -1,5 +1,8 @@
 # Fides Protocol — Data Model Reference
 
+> **DEPRECATED:** This document was written for Fides v0.1.
+> For current schemas, refer to [FIDES-v0.3.md](../spec/FIDES-v0.3.md) Appendices A-E which contain complete, up-to-date schemas including timestamp attestation, signature formats, and Payment Ledger.
+
 This document specifies the data structures used in Fides Protocol v0.1.
 
 ---
