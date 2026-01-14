@@ -59,7 +59,8 @@ This is not transparency. This is not auditing. This is a **mechanical lock**.
 
 ### Current Version
 
-- **[Fides Protocol v0.3](spec/FIDES-v0.3.md)** — Active specification (security hardened)
+- **[Fides Protocol v0.4](spec/FIDES-v0.4.md)** — Active specification (Universal Core)
+- **[Fides Protocol v0.3](spec/FIDES-v0.3.md)** — Superseded (contained Brazilian-specific logic)
 - **[Changelog](spec/CHANGELOG.md)** — Full version history
 
 ### Previous Versions
@@ -97,6 +98,17 @@ Version 0.3 hardens security against adversarial implementations:
 | Exception abuse | 30-day wait | Exponential cooldown |
 
 See [CHANGELOG.md](spec/CHANGELOG.md) for full details.
+
+## What Changed in v0.4?
+
+Version 0.4 purifies the protocol to be truly universal:
+
+| Aspect | v0.3 (Superseded) | v0.4 (Universal) |
+|--------|-------------------|------------------|
+| **Localization** | Brazilian-specific (CPF, BRL) | Generic/Universal |
+| **Logic** | Detailed implementation algorithms | High-level audit requirements |
+| **Taxonomies** | Hardcoded/Closed | Implementation Defined |
+| **Focus** | "How to do it" | "What must be done" |
 
 ---
 

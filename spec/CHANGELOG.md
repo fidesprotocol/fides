@@ -6,6 +6,74 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.5.3] - 2026-01-13 (Deep Hardening Patch)
+
+### Changed
+- **Locking:** Revocations now acquire exclusive lock (Prevent Race Condition).
+- **Amendments:** Added Cumulative 25% Rule to prevent recursive amendment attacks.
+- **Genesis:** Added `governance_succession` field.
+- **Guardians:** Added Fork Resolution Rule (Fail-Closed).
+- **Cooldown:** Added `MAX_COOLDOWN` cap (365 days).
+- **Format:** `program_id` format defined as `{authority}:{id}`.
+- **Schema:** Fixed `payment_amount` formatting and clarified `judicial_reference` constraints.
+- **Timestamp:** Added Monotonicity Rule.
+
+## [v0.5.2] - 2026-01-13 (Sanity Patch)
+
+### Changed
+- **Consistency:** Fixed numbering in Break-Glass section (4-5-6).
+- **Schema:** Corrected `maximum_value` to `string (fixed-point)` in JSON schemas and examples.
+- **Table:** Marked `program_id` as MANDATORY in field table.
+- **Assignment:** Added `judicial_reference` structure to Appendix K Schema.
+- **Consistency:** Changed `payment_amount` to `string (fixed-point)` in Payment Ledger (Section 7.7.1).
+- **Cleanup:** Removed duplicate headers, fixed typos, updated footer to v0.5.2.
+
+## [v0.5.1] - 2026-01-13 (Final Polish & Adversarial Hardening)
+
+### Changed
+- **DoS Protection:** Changed Cooldown trigger from "requested" to "recorded" to prevent spam-based denial of service (Section 9.8).
+- **Precision:** Changed `maximum_value` type from "Decimal" to "String (Fixed-Point)" to eliminate floating power errors (Section 6.3).
+- **Guardian Plurality:** Immutability Guardians now MANDATORY (Min 2) from different jurisdictions (Section 8.4.1).
+- **Judicial Integrity:** Involuntary Assignments MUST include `judicial_reference` with `court_order_hash` and `publication_url` (Section 10.6.1).
+- **Identity Verification:** Strengthened PKI requirements to mandate Cross-Verification against at least 2 independent sources (Section 6.3.3.1).
+- **Consistency:** Unified delay limits (72h Soft / 7d Hard), fixed version numbers, and standardized `BASE_COOLDOWN` >= 7 days.
+- **Schema:** Added `authority_id` to Assignment Record schema (Appendix K).
+
+## [v0.5] - 2026-01-13 (Adversarial Hardening)
+
+### Changed
+- **Bootstrap Circularity Fix:** Added `initial_org_chart` to Genesis Record to resolve the "Revocation Authority" circular dependency (Section 10.3.1).
+- **Anti-Fragmentation:** `program_id` is now MANDATORY (Section 6.3.4).
+- **Strict Delays:** Reduced `MAX_REGISTRATION_DELAY` hard cap from 90 days to 7 days (Section 6.4.4).
+- **Mandatory Cooldown:** Exception abuse cooldown is now MANDATORY ("MUST"), not recommended (Section 9.8).
+- **Degraded Timestamping:** Defined explicit protocol for Break-Glass timestamping when TSA is offline (Section 15.3).
+
+## [v0.4] - 2026-01-13 (Universal Core)
+
+### Changed
+- **Protocol Universalization:** Removed all Brazilian-specific references (CPF, Lei 8.666, BRL, Diário Oficial).
+- **Crypto Sovereignty:** Extended signature algorithm allowlist to permit national standards (e.g., GOST, SM2) when approved by oversight.
+- **Open Taxonomies:** `act_type` and `exception_type` are now implementation-defined (with mandatory reference taxonomies) rather than closed enums.
+- **Parameterized Logic:** Removed hardcoded administrative windows (e.g., "72 hours" -> `MAX_REGISTRATION_DELAY`).
+- **Organization Charts:** Generalized format requirements (JSON -> Implementation Defined).
+- **Reconciliation:** Replaced detailed pseudocode algorithm with high-level audit requirements.
+- **Failure Modes:** Abstracted specific recovery procedures into "Fail Closed" and "Recovery Record" principles.
+- **Structural Universality:**
+    - Added `AssignmentRecord` (Section 10.6) to support Factoring, Garnishment, and Redirection.
+    - Generalized `Oversight Mechanism` (Section 6.4.5, 10.3) to support non-hierarchical governance (DAOs, Boards).
+    - Added `Emergency Break-Glass` (Section 15.3) for survival mode in existential crises.
+- **Technical Hardening (Engineering Integrity):**
+    - **Genesis Record (Block 0):** Mandated signed "Root of Trust" with `act_type: genesis` and `system_parameters` (Section 6.6.3).
+    - **Assignment Security:** Differentiated logic for Voluntary (`previous_owner` signs) vs Involuntary (`authority_id` signs) assignments (Section 10.6.1).
+    - **Payment Anchor:** Mandated external anchoring for Payment Ledger to prevent "history rewriting" by Executors (Section 7.7.2).
+    - **System Limits:** Established hard caps for registration delays (90 days) and assignment depth (50 hops).
+- **Semantic Alignment (Philosophy):**
+    - Refactored Section 2 and 7.5 to align normative text with the core philosophy: FIDES does not physically "block" corruption (which is impossible), but makes it **undeniable** and **traceable**.
+
+### Removed
+- **Appendix L (Brazilian Profile):** Removed entirely; to be maintained as a separate implementation guide.
+- **Detailed Fragmentation Algorithm:** Moved to implementation domain.
+
 ## [0.3] - 2025-01-08
 
 ### Summary
